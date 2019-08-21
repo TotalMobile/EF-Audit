@@ -40,4 +40,3 @@ Phnx.Audit.EF is based on a fluent API. This is because it offers many features 
 # TODO
 
 * Reduce and simplify generics
-* Allow AuditEntryDataModel with aggregate keys
