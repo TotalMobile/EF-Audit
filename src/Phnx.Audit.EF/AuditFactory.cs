@@ -7,15 +7,16 @@ namespace Phnx.Audit.EF
 {
     public class AuditFactory<TContext, TEntity, TAuditEntry, TEntityKey> where TContext : DbContext
         where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
+        where TEntity : class
     {
-        internal AuditFactory(IAuditWriter<TContext> auditWriter, IChangeDetectionService<TContext> changeDetectionService, Func<TEntity, TEntityKey> keySelector)
+        internal AuditFactory(IEntityKeyService<TContext> entityKeyService, IAuditWriter<TContext> auditWriter, IChangeDetectionService<TContext> changeDetectionService)
         {
+            EntityKeyService = entityKeyService;
             AuditWriter = auditWriter ?? throw new ArgumentNullException(nameof(auditWriter));
             ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
-            KeySelector = keySelector ?? throw new ArgumentNullException(nameof(keySelector));
         }
 
-        protected Func<TEntity, TEntityKey> KeySelector { get; }
+        protected IEntityKeyService<TContext> EntityKeyService { get; }
         protected IAuditWriter<TContext> AuditWriter { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
 
@@ -26,10 +27,12 @@ namespace Phnx.Audit.EF
 
         public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry(TEntity entity, DateTime auditedOn)
         {
+            var key = EntityKeyService.GetKey<TEntity, TEntityKey>(entity);
+
             var entry = new TAuditEntry
             {
                 AuditedOn = auditedOn,
-                EntityId = KeySelector(entity)
+                EntityId = key
             };
 
             var fluent = new FluentAudit<TContext, TAuditEntry, TEntityKey>(ChangeDetectionService, AuditWriter, entry);

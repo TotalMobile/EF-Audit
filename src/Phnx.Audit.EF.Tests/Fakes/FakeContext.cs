@@ -24,6 +24,8 @@ namespace Phnx.Audit.EF.Tests
 
         public DbSet<ManyToManyChildModel> ManyToManyChildModels { get; set; }
 
+        public DbSet<MultiKeyModel> MultiKeyModels { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModelToAudit>()
@@ -36,6 +38,9 @@ namespace Phnx.Audit.EF.Tests
                 .HasOne(t => t.OneToOneChildModel)
                 .WithOne(t => t.Parent)
                 .HasForeignKey<OneToOneChildModel>(t => t.ParentId);
+
+            modelBuilder.Entity<MultiKeyModel>()
+                .HasKey(m => new { m.Id1, m.Id2 });
 
             base.OnModelCreating(modelBuilder);
         }

@@ -11,7 +11,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
 {
     public class FluentAuditTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null)
+        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null, IEntityKeyService<FakeContext> entityKeyService = null)
         {
             if (auditWriter is null)
             {
@@ -25,7 +25,13 @@ namespace Phnx.Audit.EF.Tests.Fluent
                 changeDetectionService = fakeChangeDetector.Object;
             }
 
-            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService);
+            if (entityKeyService is null)
+            {
+                var fakeEntityKeyService = new Mock<IEntityKeyService<FakeContext>>();
+                entityKeyService = fakeEntityKeyService.Object;
+            }
+
+            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService, entityKeyService);
 
             return auditService;
         }
@@ -100,8 +106,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
             var auditWriter = new AuditWriter<FakeContext>(Context);
 
             AuditService<FakeContext> auditService = GenerateAuditService(auditWriter, mockChanges.Object);
-            var factory = auditService.GenerateForEntries<ModelToAudit, AuditEntryModel, string>(m => m.Id);
-            var fluent = factory.GenerateEntry(model, DateTime.UtcNow);
+            var fluent = auditService.GenerateEntry<ModelToAudit, AuditEntryModel, string>(model);
 
             fluent.AddToDatabase();
             Context.SaveChanges();

@@ -29,9 +29,7 @@ ConfigureServices(IServiceCollection services)
 ## Creating an audit entry
 
 ```cs
-var factory = auditService.GenerateForEntries<ModelToAudit, MyAuditModel, int>(m => m.Id);
-
-factory.GenerateEntry(model)
+auditService.GenerateEntry<ModelToAudit, MyAuditModel, int>(model)
     .WithDescription("Something was updated")
     .AddToDatabase();
 ```

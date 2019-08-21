@@ -11,7 +11,7 @@ namespace Tests
 {
     public class AuditServiceTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null)
+        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null, IEntityKeyService<FakeContext> entityKeyService = null)
         {
             if (auditWriter is null)
             {
@@ -25,7 +25,13 @@ namespace Tests
                 changeDetectionService = fakeChangeDetector.Object;
             }
 
-            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService);
+            if (entityKeyService is null)
+            {
+                var fakeEntityKeyService = new Mock<IEntityKeyService<FakeContext>>();
+                entityKeyService = fakeEntityKeyService.Object;
+            }
+
+            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService, entityKeyService);
 
             return auditService;
         }
@@ -70,13 +76,14 @@ namespace Tests
                 .Setup(c => c.SerializeEntityChanges(It.IsAny<AuditedOperationTypeEnum>(), It.IsAny<EntityEntry>()))
                 .Returns((before, after));
 
+            var mockKey = new Mock<IEntityKeyService<FakeContext>>();
+            mockKey.Setup(e => e.GetKey<ModelToAudit, string>(It.IsAny<ModelToAudit>()))
+                .Returns(model.Id);
 
-            AuditService<FakeContext> auditService = GenerateAuditService(null, mockChanges.Object);
-            auditService.GenerateEntry<AuditEntryModel, string>(model.Id)
-                .WithChangesFor(model);
 
-            var factory = auditService.GenerateForEntries<ModelToAudit, AuditEntryModel, string>(m => m.Id);
-            AuditEntryModel entry = factory.GenerateEntry(model, DateTime.UtcNow);
+            AuditService<FakeContext> auditService = GenerateAuditService(null, mockChanges.Object, mockKey.Object);
+
+            AuditEntryModel entry = auditService.GenerateEntry<ModelToAudit, AuditEntryModel, string>(model);
 
             Assert.AreEqual(model.Id, entry.EntityId);
             Assert.AreEqual(type, entry.Type);
