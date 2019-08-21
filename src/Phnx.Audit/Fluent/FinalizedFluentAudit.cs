@@ -8,7 +8,7 @@ namespace Phnx.Audit.Fluent
         where TContext : DbContext
         where TAuditEntry : AuditEntryDataModel<TEntryKey>
     {
-        public FinalizedFluentAudit(ChangeDetectionService<TContext> changeDetectionService, AuditWriter<TContext> auditWriter, TAuditEntry entry) : base(changeDetectionService, auditWriter, entry)
+        internal FinalizedFluentAudit(IChangeDetectionService<TContext> changeDetectionService, IAuditWriter<TContext> auditWriter, TAuditEntry entry) : base(changeDetectionService, auditWriter, entry)
         {
         }
 

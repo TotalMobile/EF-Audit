@@ -5,9 +5,9 @@ using System;
 
 namespace Phnx.Audit
 {
-    public static class ChangeDetectionServiceExtensions
+    public static class IChangeDetectionServiceExtensions
     {
-        public static (AuditedOperationTypeEnum type, string before, string after) SerializeEntityChanges<TContext>(this ChangeDetectionService<TContext> service, object model) where TContext : DbContext
+        public static (AuditedOperationTypeEnum type, string beforeJson, string afterJson) SerializeEntityChanges<TContext>(this IChangeDetectionService<TContext> service, object model) where TContext : DbContext
         {
             if (service is null)
             {

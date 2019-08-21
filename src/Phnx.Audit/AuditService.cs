@@ -5,23 +5,23 @@ using System;
 
 namespace Phnx.Audit
 {
-    public class AuditService<TContext> where TContext : DbContext
+    public class AuditService<TContext> : IAuditService<TContext> where TContext : DbContext
     {
-        public AuditService(AuditWriter<TContext> auditWriter, ChangeDetectionService<TContext> changeDetectionService)
+        public AuditService(IAuditWriter<TContext> auditWriter, IChangeDetectionService<TContext> changeDetectionService)
         {
-            AuditWriter = auditWriter;
-            ChangeDetectionService = changeDetectionService;
+            AuditWriter = auditWriter ?? throw new ArgumentNullException(nameof(auditWriter));
+            ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
         }
 
-        protected AuditWriter<TContext> AuditWriter { get; }
-        protected ChangeDetectionService<TContext> ChangeDetectionService { get; }
+        protected IAuditWriter<TContext> AuditWriter { get; }
+        protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
 
-        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId)
+        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId, DateTime auditedOn)
             where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
         {
             var entry = new TAuditEntry
             {
-                AuditedOn = DateTime.UtcNow,
+                AuditedOn = auditedOn,
                 EntityId = entityId
             };
 
@@ -33,33 +33,6 @@ namespace Phnx.Audit
             where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
         {
             return new AuditFactory<TContext, TEntity, TAuditEntry, TEntityKey>(AuditWriter, ChangeDetectionService, keySelector);
-        }
-    }
-
-    public class AuditFactory<TContext, TEntity, TAuditEntry, TEntityKey>
-        where TContext : DbContext
-        where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
-    {
-        internal AuditFactory(AuditWriter<TContext> auditWriter, ChangeDetectionService<TContext> changeDetectionService, Func<TEntity, TEntityKey> keySelector)
-        {
-            AuditWriter = auditWriter ?? throw new ArgumentNullException(nameof(auditWriter));
-            ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
-            KeySelector = keySelector ?? throw new ArgumentNullException(nameof(keySelector));
-        }
-
-        protected Func<TEntity, TEntityKey> KeySelector { get; }
-        protected AuditWriter<TContext> AuditWriter { get; }
-        protected ChangeDetectionService<TContext> ChangeDetectionService { get; }
-
-        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry(TEntity entity)
-        {
-            var entry = new TAuditEntry
-            {
-                AuditedOn = DateTime.UtcNow,
-                EntityId = KeySelector(entity)
-            };
-
-            return new FluentAudit<TContext, TAuditEntry, TEntityKey>(ChangeDetectionService, AuditWriter, entry);
         }
     }
 }

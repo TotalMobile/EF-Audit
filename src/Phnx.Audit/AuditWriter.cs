@@ -3,7 +3,7 @@ using Phnx.Audit.Models;
 
 namespace Phnx.Audit
 {
-    public class AuditWriter<TContext> where TContext : DbContext
+    public class AuditWriter<TContext> : IAuditWriter<TContext> where TContext : DbContext
     {
         public AuditWriter(TContext dbContext)
         {

@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace Phnx.Audit
 {
-    public class ChangeDetectionService<TContext> where TContext : DbContext
+    public class ChangeDetectionService<TContext> : IChangeDetectionService<TContext> where TContext : DbContext
     {
         public ChangeDetectionService(TContext dbContext)
         {
-            DbContext = dbContext;
+            DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         protected TContext DbContext { get; }
@@ -56,7 +56,7 @@ namespace Phnx.Audit
                     return (jsonEntity, null);
 
                 default:
-                    throw new ArgumentException(nameof(changeType));
+                    throw new ArgumentOutOfRangeException(nameof(changeType));
             }
         }
 
@@ -89,11 +89,7 @@ namespace Phnx.Audit
 
         private IEnumerable<ChangedMember> GetUpdatedMembers(EntityEntry entity)
         {
-            AuditedOperationTypeEnum? changeType = GetChangeType(entity);
-            if (!changeType.HasValue)
-            {
-                throw new InvalidOperationException("Cannot get updated members for a model that is not tracked");
-            }
+            AuditedOperationTypeEnum changeType = GetChangeType(entity);
 
             foreach (PropertyEntry prop in entity.Properties)
             {
