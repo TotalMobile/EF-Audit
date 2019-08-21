@@ -16,6 +16,12 @@ namespace Phnx.Audit.EF
         protected IAuditWriter<TContext> AuditWriter { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
 
+        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId)
+            where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
+        {
+            return GenerateEntry<TAuditEntry, TEntityKey>(entityId, DateTime.UtcNow);
+        }
+
         public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId, DateTime auditedOn)
             where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
         {

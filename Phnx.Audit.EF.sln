@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phnx.Audit.EF", "src\Phnx.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Phnx.Audit.EF.Tests", "src\Phnx.Audit.EF.Tests\Phnx.Audit.EF.Tests.csproj", "{940E4DC5-6A41-4165-98A3-4CDC5EEC7AFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phnx.Audit.EF.DependencyInjection", "src\Phnx.Audit.EF.DependencyInjection\Phnx.Audit.EF.DependencyInjection.csproj", "{7268A9F4-258D-4499-8640-B7B40466404B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{940E4DC5-6A41-4165-98A3-4CDC5EEC7AFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{940E4DC5-6A41-4165-98A3-4CDC5EEC7AFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{940E4DC5-6A41-4165-98A3-4CDC5EEC7AFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7268A9F4-258D-4499-8640-B7B40466404B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7268A9F4-258D-4499-8640-B7B40466404B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7268A9F4-258D-4499-8640-B7B40466404B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7268A9F4-258D-4499-8640-B7B40466404B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

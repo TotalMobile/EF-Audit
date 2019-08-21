@@ -26,9 +26,9 @@ namespace Phnx.Audit.EF.Fluent
             return this;
         }
 
-        public void Write()
+        public void AddToDatabase()
         {
-            AuditWriter.Write<TAuditEntry, TEntryKey>(Entry);
+            AuditWriter.AddToDatabase<TAuditEntry, TEntryKey>(Entry);
         }
 
         public static implicit operator TAuditEntry(FinalizedFluentAudit<TContext, TAuditEntry, TEntryKey> fluent)

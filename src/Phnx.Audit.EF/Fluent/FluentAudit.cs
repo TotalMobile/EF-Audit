@@ -8,15 +8,15 @@ namespace Phnx.Audit.EF.Fluent
         where TContext : DbContext
         where TAuditEntry : AuditEntryDataModel<TEntryKey>
     {
+        public TAuditEntry Entry { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
         protected IAuditWriter<TContext> AuditWriter { get; }
-        protected TAuditEntry Entry { get; }
 
         internal FluentAudit(IChangeDetectionService<TContext> changeDetectionService, IAuditWriter<TContext> auditWriter, TAuditEntry entry)
         {
+            Entry = entry;
             ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
             AuditWriter = auditWriter ?? throw new ArgumentNullException(nameof(auditWriter));
-            Entry = entry;
         }
 
         public FluentAudit<TContext, TAuditEntry, TEntryKey> WithUserId(string userId)

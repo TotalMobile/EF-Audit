@@ -72,6 +72,9 @@ namespace Tests
 
 
             AuditService<FakeContext> auditService = GenerateAuditService(null, mockChanges.Object);
+            auditService.GenerateEntry<AuditEntryModel, string>(model.Id)
+                .WithChangesFor(model);
+
             var factory = auditService.GenerateForEntries<ModelToAudit, AuditEntryModel, string>(m => m.Id);
             AuditEntryModel entry = factory.GenerateEntry(model, DateTime.UtcNow);
 

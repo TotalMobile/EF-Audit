@@ -103,7 +103,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
             var factory = auditService.GenerateForEntries<ModelToAudit, AuditEntryModel, string>(m => m.Id);
             var fluent = factory.GenerateEntry(model, DateTime.UtcNow);
 
-            fluent.Write();
+            fluent.AddToDatabase();
             Context.SaveChanges();
 
             Assert.AreEqual(1, Context.AuditEntries.Count());

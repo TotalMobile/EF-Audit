@@ -5,7 +5,7 @@ using System;
 
 namespace Phnx.Audit.EF
 {
-    public class AuditFactory<TContext, TEntity, TAuditEntry, TEntityKey> : IAuditFactory<TContext, TEntity, TAuditEntry, TEntityKey> where TContext : DbContext
+    public class AuditFactory<TContext, TEntity, TAuditEntry, TEntityKey> where TContext : DbContext
         where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
     {
         internal AuditFactory(IAuditWriter<TContext> auditWriter, IChangeDetectionService<TContext> changeDetectionService, Func<TEntity, TEntityKey> keySelector)
@@ -18,6 +18,11 @@ namespace Phnx.Audit.EF
         protected Func<TEntity, TEntityKey> KeySelector { get; }
         protected IAuditWriter<TContext> AuditWriter { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
+
+        public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry(TEntity entity)
+        {
+            return GenerateEntry(entity, DateTime.UtcNow);
+        }
 
         public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry(TEntity entity, DateTime auditedOn)
         {

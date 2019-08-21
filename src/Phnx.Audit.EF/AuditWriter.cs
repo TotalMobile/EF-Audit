@@ -12,7 +12,7 @@ namespace Phnx.Audit.EF
 
         protected TContext DbContext { get; }
 
-        public void Write<TAuditEntry, TEntityKey>(TAuditEntry auditEntry) where TAuditEntry : AuditEntryDataModel<TEntityKey>
+        public void AddToDatabase<TAuditEntry, TEntityKey>(TAuditEntry auditEntry) where TAuditEntry : AuditEntryDataModel<TEntityKey>
         {
             DbContext.Add(auditEntry);
         }

@@ -5,6 +5,6 @@ namespace Phnx.Audit.EF
 {
     public interface IAuditWriter<TContext> where TContext : DbContext
     {
-        void Write<TAuditEntry, TEntityKey>(TAuditEntry auditEntry) where TAuditEntry : AuditEntryDataModel<TEntityKey>;
+        void AddToDatabase<TAuditEntry, TEntityKey>(TAuditEntry auditEntry) where TAuditEntry : AuditEntryDataModel<TEntityKey>;
     }
 }
