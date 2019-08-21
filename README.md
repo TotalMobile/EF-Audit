@@ -6,12 +6,12 @@ Unlike most auditing libraries, it does not override entity framework's `OnChang
 # Usage
 
 ## Setup
-You can optionally set up dependency injection using `Phnx.Audit.EF.DependencyInjection`, which adds all the interfaces to the `IServiceCollection` via `AddAuditing`.
+You can optionally set up dependency injection using `Phnx.Audit.EF.DependencyInjection`, which adds all the interfaces to the `IServiceCollection` via `AddPhoenixAuditing`.
 
 ```cs
 ConfigureServices(IServiceCollection services)
 {
-    services.AddAuditing<MyDbContext>();
+    services.AddPhoenixAuditing<MyDbContext>();
 }
 ```
 
