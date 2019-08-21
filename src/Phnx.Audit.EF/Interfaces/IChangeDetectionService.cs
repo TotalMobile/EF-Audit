@@ -1,0 +1,13 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Phnx.Audit.EF.Models;
+
+namespace Phnx.Audit.EF
+{
+    public interface IChangeDetectionService<TContext> where TContext : DbContext
+    {
+        AuditedOperationTypeEnum GetChangeType(EntityEntry entity);
+        EntityEntry GetEntity(object model);
+        (string original, string updated) SerializeEntityChanges(AuditedOperationTypeEnum changeType, EntityEntry entity);
+    }
+}
