@@ -47,7 +47,7 @@ namespace Phnx.Audit.EF
             where TEntity : class
             where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
         {
-            var key = EntityKeyService.GetKey<TEntity, TEntityKey>(entity);
+            var key = EntityKeyService.GetPrimaryKey<TEntity, TEntityKey>(entity);
 
             var entry = new TAuditEntry
             {

@@ -7,7 +7,7 @@ using Phnx.Audit.EF.Tests;
 using Phnx.Audit.EF.Tests.Fakes;
 using System;
 
-namespace Tests
+namespace Phnx.Audit.EF.Tests
 {
     public class AuditServiceTests : ContextTestBase
     {
@@ -77,7 +77,7 @@ namespace Tests
                 .Returns((before, after));
 
             var mockKey = new Mock<IEntityKeyService<FakeContext>>();
-            mockKey.Setup(e => e.GetKey<ModelToAudit, string>(It.IsAny<ModelToAudit>()))
+            mockKey.Setup(e => e.GetPrimaryKey<ModelToAudit, string>(It.IsAny<ModelToAudit>()))
                 .Returns(model.Id);
 
 

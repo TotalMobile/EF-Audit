@@ -27,7 +27,7 @@ namespace Phnx.Audit.EF
 
         public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry(TEntity entity, DateTime auditedOn)
         {
-            var key = EntityKeyService.GetKey<TEntity, TEntityKey>(entity);
+            var key = EntityKeyService.GetPrimaryKey<TEntity, TEntityKey>(entity);
 
             var entry = new TAuditEntry
             {

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 
 namespace Phnx.Audit.EF
 {
@@ -17,40 +19,86 @@ namespace Phnx.Audit.EF
 
         public IReadOnlyList<IProperty> GetPrimaryKeys<TEntity>() where TEntity : class
         {
-            IEntityType type = Context.Model.FindEntityType(typeof(TEntity));
+            return GetPrimaryKeys(typeof(TEntity));
+        }
+
+        public IReadOnlyList<IProperty> GetPrimaryKeys(Type entityType)
+        {
+            IEntityType type = Context.Model.FindEntityType(entityType);
 
             IKey key = type.FindPrimaryKey();
 
             return key.Properties;
         }
 
-        public TKey GetKey<TEntity, TKey>(TEntity entity) where TEntity : class
+        public TKey GetPrimaryKey<TEntity, TKey>(TEntity entity) where TEntity : class
         {
-            IReadOnlyList<IProperty> keys = GetPrimaryKeys<TEntity>();
+            IDictionary<string, object> keys = GetKeyValues(entity);
+
+            if (keys.Count > 1 && typeof(TKey) != typeof(object))
+            {
+                throw new NotSupportedException("Multiple primary keys are not supported if " + nameof(TKey) + " is not set to type " + typeof(object));
+            }
+
+            return (TKey)keys.First().Value;
+        }
+
+        public TKeys GetPrimaryKeys<TEntity, TKeys>(TEntity entity)
+            where TEntity : class
+            where TKeys : new()
+        {
+            if (entity is null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
+            IDictionary<string, object> keys = GetKeyValues(entity);
 
             if (keys.Count == 1)
             {
-                TKey key = Context.Entry(entity).CurrentValues.GetValue<TKey>(keys[0]);
-                return key;
+                throw new NotSupportedException("Cannot get multiple keys. Only one primary key was detected");
             }
-            else if (typeof(TKey) == typeof(object))
+
+            if (typeof(TKeys) == typeof(object))
             {
-                dynamic model = new ExpandoObject();
-                IDictionary<string, object> modelDictionary = model;
+                dynamic dynamicKeys = new ExpandoObject();
+                IDictionary<string, object> dynamicDictionary = dynamicKeys;
 
                 foreach (var key in keys)
                 {
-                    object keyValue = Context.Entry(entity).CurrentValues.GetValue<object>(key);
-                    modelDictionary.Add(key.Name, keyValue);
+                    dynamicDictionary.Add(key.Key, key.Value);
                 }
 
-                object modelObject = model;
-                return (TKey)modelObject;
+                return (TKeys)dynamicKeys;
             }
-            else
+
+            // Build keys type
+            var keysModel = new TKeys();
+
+            foreach (PropertyInfo property in typeof(TKeys).GetProperties())
             {
-                throw new NotSupportedException("Aggregate primary keys are not supported if " + nameof(TKey) + " is not set to type " + typeof(object));
+                if (keys.TryGetValue(property.Name, out var value))
+                {
+                    property.SetValue(keysModel, value);
+                }
             }
+
+            return keysModel;
+        }
+
+        private IDictionary<string, object> GetKeyValues<TEntity>(TEntity entity) where TEntity : class
+        {
+            IReadOnlyList<IProperty> keys = GetPrimaryKeys<TEntity>();
+
+            IDictionary<string, object> modelDictionary = new Dictionary<string, object>();
+
+            foreach (IProperty key in keys)
+            {
+                var keyValue = Context.Entry(entity).CurrentValues.GetValue<object>(key);
+                modelDictionary.Add(key.Name, keyValue);
+            }
+
+            return modelDictionary;
         }
     }
 }

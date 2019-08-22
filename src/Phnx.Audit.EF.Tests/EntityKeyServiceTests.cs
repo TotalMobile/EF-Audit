@@ -17,13 +17,13 @@ namespace Phnx.Audit.EF.Tests
             };
             var keyService = new EntityKeyService<FakeContext>(Context);
 
-            var result = keyService.GetKey<ModelToAudit, string>(model);
+            var result = keyService.GetPrimaryKey<ModelToAudit, string>(model);
 
             Assert.AreEqual(id, result);
         }
 
         [Test]
-        public void GetPrimaryKeys_ForObjectWithMultipleKeys_GetsMultipleKeys()
+        public void GetPrimaryKeys_ForObjectWithMultipleUnknownKeys_GetsMultipleKeys()
         {
             var model = new MultiKeyModel
             {
@@ -32,11 +32,28 @@ namespace Phnx.Audit.EF.Tests
             };
             var keyService = new EntityKeyService<FakeContext>(Context);
 
-            dynamic keyValues = keyService.GetKey<MultiKeyModel, object>(model);
+            dynamic keyValues = keyService.GetPrimaryKeys<MultiKeyModel, object>(model);
             IDictionary<string, object> keys = keyValues;
 
             Assert.AreEqual(model.Id1, keys[nameof(MultiKeyModel.Id1)]);
             Assert.AreEqual(model.Id2, keys[nameof(MultiKeyModel.Id2)]);
+        }
+
+        [Test]
+        public void GetPrimaryKeys_ForObjectWithMultipleKnownKeys_GetsMultipleKeys()
+        {
+            var model = new MultiKeyModel
+            {
+                Id1 = Guid.NewGuid().ToString(),
+                Id2 = Guid.NewGuid().ToString()
+            };
+
+            var keyService = new EntityKeyService<FakeContext>(Context);
+
+            FakeKeySet keyValues = keyService.GetPrimaryKeys<MultiKeyModel, FakeKeySet>(model);
+
+            Assert.AreEqual(model.Id1, keyValues.Id1);
+            Assert.AreEqual(model.Id2, keyValues.Id2);
         }
 
         [Test]
@@ -48,7 +65,7 @@ namespace Phnx.Audit.EF.Tests
             };
             var keyService = new EntityKeyService<FakeContext>(Context);
 
-            Assert.Throws<InvalidCastException>(() => keyService.GetKey<ModelToAudit, int>(model));
+            Assert.Throws<InvalidCastException>(() => keyService.GetPrimaryKey<ModelToAudit, int>(model));
         }
     }
 }
