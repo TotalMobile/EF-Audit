@@ -16,16 +16,16 @@ namespace Phnx.Audit.EF
         protected TContext Context { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
 
-        public FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity)
+        public FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity)
             where TEntity : class
-            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
+            where TAuditEntry : AuditEntryDataModel<TEntity>, new()
         {
-            return GenerateEntry<TAuditEntry, TEntity, TEntityKey>(entity, DateTime.UtcNow);
+            return GenerateEntry<TAuditEntry, TEntity>(entity, DateTime.UtcNow);
         }
 
-        public FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity, DateTime auditedOn)
+        public FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity, DateTime auditedOn)
             where TEntity : class
-            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
+            where TAuditEntry : AuditEntryDataModel<TEntity>, new()
         {
             var (type, beforeJson, afterJson) = ChangeDetectionService.SerializeEntityChanges(entity);
 
@@ -40,7 +40,7 @@ namespace Phnx.Audit.EF
 
             Context.Add(entry);
 
-            var fluent = new FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey>(entry);
+            var fluent = new FluentAudit<TContext, TAuditEntry, TEntity>(entry);
 
             return fluent;
         }

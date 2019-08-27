@@ -1,6 +1,6 @@
 ﻿namespace Phnx.Audit.EF.Models
 {
-    public class ChangedMember
+    internal struct ChangedMember
     {
         public string Name { get; set; }
 

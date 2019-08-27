@@ -102,7 +102,7 @@ namespace Phnx.Audit.EF
 
         private bool MemberHasBeenUpdated(PropertyEntry entityMember, out ChangedMember update)
         {
-            update = null;
+            update = new ChangedMember();
 
             if (!entityMember.IsModified)
             {
@@ -121,12 +121,9 @@ namespace Phnx.Audit.EF
                 }
             }
 
-            update = new ChangedMember
-            {
-                Before = entityMember.OriginalValue,
-                After = entityMember.CurrentValue,
-                Name = entityMember.Metadata.Name
-            };
+            update.Before = entityMember.OriginalValue;
+            update.After = entityMember.CurrentValue;
+            update.Name = entityMember.Metadata.Name;
 
             return true;
         }

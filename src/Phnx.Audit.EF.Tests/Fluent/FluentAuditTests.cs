@@ -29,7 +29,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
         {
             var description = "Sample";
             AuditService<FakeContext> auditService = GenerateAuditService();
-            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit, string> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit());
+            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(new ModelToAudit());
 
             AuditEntryModel entry = fluent.WithDescription(description);
 
@@ -41,7 +41,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
         {
             var userId = "Sample";
             AuditService<FakeContext> auditService = GenerateAuditService();
-            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit, string> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit());
+            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(new ModelToAudit());
 
             AuditEntryModel entry = fluent.WithUserId(userId);
 
@@ -67,7 +67,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
 
 
             AuditService<FakeContext> auditService = GenerateAuditService(mockChanges.Object);
-            AuditEntryModel entry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
+            AuditEntryModel entry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(model);
 
             Assert.AreEqual(type, entry.Type);
             Assert.AreEqual(before, entry.EntityBeforeJson);
@@ -90,7 +90,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
                 .Returns((string.Empty, string.Empty));
 
             AuditService<FakeContext> auditService = GenerateAuditService(mockChanges.Object);
-            var fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
+            var fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(model);
 
             Context.SaveChanges();
 

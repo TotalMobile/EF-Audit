@@ -29,7 +29,7 @@ namespace Phnx.Audit.EF.Tests
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModelToAudit>()
-                .HasAudit<ModelToAudit, AuditEntryModel, string>(m => m.Audits)
+                .HasAudit(m => m.Audits)
                 .HasMany(t => t.ManyToManyChildModels);
 
             modelBuilder.Entity<ManyToManyChildModel>()

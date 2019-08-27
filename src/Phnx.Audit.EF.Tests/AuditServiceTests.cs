@@ -26,7 +26,7 @@ namespace Phnx.Audit.EF.Tests
         {
             var auditedOn = new DateTime(2000, 1, 1);
             AuditService<FakeContext> auditService = GenerateAuditService();
-            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit(), auditedOn);
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(new ModelToAudit(), auditedOn);
 
             Assert.AreEqual(auditedOn, newEntry.AuditedOn);
         }
@@ -38,7 +38,7 @@ namespace Phnx.Audit.EF.Tests
             Context.Add(model);
 
             AuditService<FakeContext> auditService = GenerateAuditService();
-            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(model);
 
             model.Audits = new List<AuditEntryModel>
             {
@@ -57,7 +57,7 @@ namespace Phnx.Audit.EF.Tests
             Context.Add(model);
 
             AuditService<FakeContext> auditService = GenerateAuditService();
-            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(model);
 
             model.Audits = new List<AuditEntryModel>
             {

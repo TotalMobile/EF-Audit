@@ -7,12 +7,12 @@ namespace Phnx.Audit.EF
 {
     public interface IAuditService<TContext> where TContext : DbContext
     {
-        FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity)
-            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
+        FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity)
+            where TAuditEntry : AuditEntryDataModel<TEntity>, new()
             where TEntity : class;
 
-        FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity, DateTime auditedOn)
-            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
+        FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity, DateTime auditedOn)
+            where TAuditEntry : AuditEntryDataModel<TEntity>, new()
             where TEntity : class;
     }
 }
