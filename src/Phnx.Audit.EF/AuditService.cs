@@ -7,57 +7,42 @@ namespace Phnx.Audit.EF
 {
     public class AuditService<TContext> : IAuditService<TContext> where TContext : DbContext
     {
-        public AuditService(IAuditWriter<TContext> auditWriter, IChangeDetectionService<TContext> changeDetectionService, IEntityKeyService<TContext> entityKeyService)
+        public AuditService(TContext context, IChangeDetectionService<TContext> changeDetectionService)
         {
-            AuditWriter = auditWriter ?? throw new ArgumentNullException(nameof(auditWriter));
+            Context = context ?? throw new ArgumentNullException(nameof(context));
             ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
-            EntityKeyService = entityKeyService ?? throw new ArgumentNullException(nameof(entityKeyService));
         }
 
-        protected IAuditWriter<TContext> AuditWriter { get; }
+        protected TContext Context { get; }
         protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
-        protected IEntityKeyService<TContext> EntityKeyService { get; }
 
-        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId)
-            where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
-        {
-            return GenerateEntry<TAuditEntry, TEntityKey>(entityId, DateTime.UtcNow);
-        }
-
-        public FluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TAuditEntry, TEntityKey>(TEntityKey entityId, DateTime auditedOn)
-            where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
-        {
-            var entry = new TAuditEntry
-            {
-                AuditedOn = auditedOn,
-                EntityId = entityId
-            };
-
-            return new FluentAudit<TContext, TAuditEntry, TEntityKey>(ChangeDetectionService, AuditWriter, entry);
-        }
-
-        public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TEntity, TAuditEntry, TEntityKey>(TEntity entity)
+        public FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity)
             where TEntity : class
-            where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
+            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
         {
-            return GenerateEntry<TEntity, TAuditEntry, TEntityKey>(entity, DateTime.UtcNow);
+            return GenerateEntry<TAuditEntry, TEntity, TEntityKey>(entity, DateTime.UtcNow);
         }
 
-        public FinalizedFluentAudit<TContext, TAuditEntry, TEntityKey> GenerateEntry<TEntity, TAuditEntry, TEntityKey>(TEntity entity, DateTime auditedOn)
+        public FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey> GenerateEntry<TAuditEntry, TEntity, TEntityKey>(TEntity entity, DateTime auditedOn)
             where TEntity : class
-            where TAuditEntry : AuditEntryDataModel<TEntityKey>, new()
+            where TAuditEntry : AuditEntryDataModel<TEntity, TEntityKey>, new()
         {
-            var key = EntityKeyService.GetPrimaryKey<TEntity, TEntityKey>(entity);
+            var (type, beforeJson, afterJson) = ChangeDetectionService.SerializeEntityChanges(entity);
 
             var entry = new TAuditEntry
             {
                 AuditedOn = auditedOn,
-                EntityId = key
+                Entity = entity,
+                Type = type,
+                EntityBeforeJson = beforeJson,
+                EntityAfterJson = afterJson
             };
 
-            var fluent = new FluentAudit<TContext, TAuditEntry, TEntityKey>(ChangeDetectionService, AuditWriter, entry);
+            Context.Add(entry);
 
-            return fluent.WithChangesFor(entity);
+            var fluent = new FluentAudit<TContext, TAuditEntry, TEntity, TEntityKey>(entry);
+
+            return fluent;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Phnx.Audit.EF.Tests.Fakes
 {
-    public class AuditEntryModel : AuditEntryDataModel<string>
+    public class AuditEntryModel : AuditEntryDataModel<ModelToAudit, string>
     {
     }
 }

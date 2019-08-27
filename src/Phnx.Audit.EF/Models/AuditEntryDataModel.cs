@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Phnx.Audit.EF.Models
 {
-    public class AuditEntryDataModel<TKey>
+    public class AuditEntryDataModel<TEntity, TKey>
+        where TEntity : class
     {
         public long Id { get; set; }
 
@@ -16,7 +17,8 @@ namespace Phnx.Audit.EF.Models
 
         public string UserId { get; set; }
 
-        [Required]
+        public TEntity Entity { get; set; }
+
         public TKey EntityId { get; set; }
 
         public string EntityBeforeJson { get; set; }

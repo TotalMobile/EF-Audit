@@ -11,27 +11,15 @@ namespace Phnx.Audit.EF.Tests.Fluent
 {
     public class FluentAuditTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null, IEntityKeyService<FakeContext> entityKeyService = null)
+        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService<FakeContext> changeDetectionService = null)
         {
-            if (auditWriter is null)
-            {
-                var fakeAuditWriter = new Mock<IAuditWriter<FakeContext>>();
-                auditWriter = fakeAuditWriter.Object;
-            }
-
             if (changeDetectionService is null)
             {
                 var fakeChangeDetector = new Mock<IChangeDetectionService<FakeContext>>();
                 changeDetectionService = fakeChangeDetector.Object;
             }
 
-            if (entityKeyService is null)
-            {
-                var fakeEntityKeyService = new Mock<IEntityKeyService<FakeContext>>();
-                entityKeyService = fakeEntityKeyService.Object;
-            }
-
-            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService, entityKeyService);
+            var auditService = new AuditService<FakeContext>(Context, changeDetectionService);
 
             return auditService;
         }
@@ -41,7 +29,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
         {
             var description = "Sample";
             AuditService<FakeContext> auditService = GenerateAuditService();
-            FluentAudit<FakeContext, AuditEntryModel, string> fluent = auditService.GenerateEntry<AuditEntryModel, string>("", DateTime.UtcNow);
+            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit, string> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit());
 
             AuditEntryModel entry = fluent.WithDescription(description);
 
@@ -53,7 +41,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
         {
             var userId = "Sample";
             AuditService<FakeContext> auditService = GenerateAuditService();
-            FluentAudit<FakeContext, AuditEntryModel, string> fluent = auditService.GenerateEntry<AuditEntryModel, string>("", DateTime.UtcNow);
+            FluentAudit<FakeContext, AuditEntryModel, ModelToAudit, string> fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit());
 
             AuditEntryModel entry = fluent.WithUserId(userId);
 
@@ -78,10 +66,8 @@ namespace Phnx.Audit.EF.Tests.Fluent
                 .Returns((before, after));
 
 
-            AuditService<FakeContext> auditService = GenerateAuditService(null, mockChanges.Object);
-            FluentAudit<FakeContext, AuditEntryModel, string> fluent = auditService.GenerateEntry<AuditEntryModel, string>("", DateTime.UtcNow);
-
-            AuditEntryModel entry = fluent.WithChangesFor(model);
+            AuditService<FakeContext> auditService = GenerateAuditService(mockChanges.Object);
+            AuditEntryModel entry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
 
             Assert.AreEqual(type, entry.Type);
             Assert.AreEqual(before, entry.EntityBeforeJson);
@@ -103,12 +89,9 @@ namespace Phnx.Audit.EF.Tests.Fluent
                 .Setup(c => c.SerializeEntityChanges(It.IsAny<AuditedOperationTypeEnum>(), It.IsAny<EntityEntry>()))
                 .Returns((string.Empty, string.Empty));
 
-            var auditWriter = new AuditWriter<FakeContext>(Context);
+            AuditService<FakeContext> auditService = GenerateAuditService(mockChanges.Object);
+            var fluent = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
 
-            AuditService<FakeContext> auditService = GenerateAuditService(auditWriter, mockChanges.Object);
-            var fluent = auditService.GenerateEntry<ModelToAudit, AuditEntryModel, string>(model);
-
-            fluent.AddToDatabase();
             Context.SaveChanges();
 
             Assert.AreEqual(1, Context.AuditEntries.Count());

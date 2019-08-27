@@ -1,49 +1,24 @@
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Moq;
 using NUnit.Framework;
-using Phnx.Audit.EF;
-using Phnx.Audit.EF.Models;
-using Phnx.Audit.EF.Tests;
 using Phnx.Audit.EF.Tests.Fakes;
 using System;
+using System.Collections.Generic;
 
 namespace Phnx.Audit.EF.Tests
 {
     public class AuditServiceTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IAuditWriter<FakeContext> auditWriter = null, IChangeDetectionService<FakeContext> changeDetectionService = null, IEntityKeyService<FakeContext> entityKeyService = null)
+        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService<FakeContext> changeDetectionService = null)
         {
-            if (auditWriter is null)
-            {
-                var fakeAuditWriter = new Mock<IAuditWriter<FakeContext>>();
-                auditWriter = fakeAuditWriter.Object;
-            }
-
             if (changeDetectionService is null)
             {
                 var fakeChangeDetector = new Mock<IChangeDetectionService<FakeContext>>();
                 changeDetectionService = fakeChangeDetector.Object;
             }
 
-            if (entityKeyService is null)
-            {
-                var fakeEntityKeyService = new Mock<IEntityKeyService<FakeContext>>();
-                entityKeyService = fakeEntityKeyService.Object;
-            }
-
-            var auditService = new AuditService<FakeContext>(auditWriter, changeDetectionService, entityKeyService);
+            var auditService = new AuditService<FakeContext>(Context, changeDetectionService);
 
             return auditService;
-        }
-
-        [Test]
-        public void GenerateEntry_WithEntityId_SetsEntityId()
-        {
-            var id = Guid.NewGuid().ToString();
-            AuditService<FakeContext> auditService = GenerateAuditService();
-            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, string>(id, DateTime.UtcNow);
-
-            Assert.AreEqual(id, newEntry.EntityId);
         }
 
         [Test]
@@ -51,44 +26,47 @@ namespace Phnx.Audit.EF.Tests
         {
             var auditedOn = new DateTime(2000, 1, 1);
             AuditService<FakeContext> auditService = GenerateAuditService();
-            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, string>("", auditedOn);
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(new ModelToAudit(), auditedOn);
 
             Assert.AreEqual(auditedOn, newEntry.AuditedOn);
         }
 
         [Test]
-        public void GenerateForEntries_WithEntitySelector_SetsEntityIdAccordingToSelectorResult()
+        public void GenerateEntry_WhenIdIsDbGeneratedAndModelIsNew_SetsEntityIdOnSave()
         {
-            var before = "before_changes";
-            var after = "after_changes";
-            AuditedOperationTypeEnum type = AuditedOperationTypeEnum.Update;
-            var model = new ModelToAudit
+            var model = new ModelToAudit();
+            Context.Add(model);
+
+            AuditService<FakeContext> auditService = GenerateAuditService();
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
+
+            model.Audits = new List<AuditEntryModel>
             {
-                Id = Guid.NewGuid().ToString()
+                newEntry
             };
 
-            var mockChanges = new Mock<IChangeDetectionService<FakeContext>>();
-            mockChanges
-                .Setup(c => c.GetChangeType(It.IsAny<EntityEntry>()))
-                .Returns(type);
+            Context.SaveChanges();
 
-            mockChanges
-                .Setup(c => c.SerializeEntityChanges(It.IsAny<AuditedOperationTypeEnum>(), It.IsAny<EntityEntry>()))
-                .Returns((before, after));
+            Assert.AreEqual(model.Id, newEntry.EntityId);
+        }
 
-            var mockKey = new Mock<IEntityKeyService<FakeContext>>();
-            mockKey.Setup(e => e.GetPrimaryKey<ModelToAudit, string>(It.IsAny<ModelToAudit>()))
-                .Returns(model.Id);
+        [Test]
+        public void GenerateEntry_WhenIdIsNotDbGenerated_SetsEntityIdOnSave()
+        {
+            var model = new ModelToAudit();
+            Context.Add(model);
 
+            AuditService<FakeContext> auditService = GenerateAuditService();
+            AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit, string>(model);
 
-            AuditService<FakeContext> auditService = GenerateAuditService(null, mockChanges.Object, mockKey.Object);
+            model.Audits = new List<AuditEntryModel>
+            {
+                newEntry
+            };
 
-            AuditEntryModel entry = auditService.GenerateEntry<ModelToAudit, AuditEntryModel, string>(model);
+            Context.SaveChanges();
 
-            Assert.AreEqual(model.Id, entry.EntityId);
-            Assert.AreEqual(type, entry.Type);
-            Assert.AreEqual(before, entry.EntityBeforeJson);
-            Assert.AreEqual(after, entry.EntityAfterJson);
+            Assert.AreEqual(model.Id, newEntry.EntityId);
         }
     }
 }
