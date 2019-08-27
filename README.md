@@ -61,9 +61,13 @@ Underneath, these extension methods set the Entity to a foreign object, and set 
 ## Creating an audit entry
 
 ```cs
-auditService.GenerateEntry<ModelToAudit, MyAuditModel>(model)
-    .WithDescription("Something was updated")
-    .AddToDatabase();
+auditService.GenerateEntry<ModelToAudit, MyAuditModel>(model);
 ```
 
 `Phnx.Audit.EF` is based on a fluent API. This is because it offers many features that are optional. You can add your own extension methods onto `FluentAudit` if you want to add your own metadata, including metadata specific to certain audit events (such as who authorized a change, if a change requires review).
+
+```cs
+auditService.GenerateEntry<ModelToAudit, MyAuditModel>(model)
+    .WithDescription("Something was updated")
+    .WithUserId("sample-user-id");
+```
