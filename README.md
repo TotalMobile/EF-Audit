@@ -3,6 +3,8 @@ This project allows auditing to be automatically tracked and scanned, whilst sti
 
 Unlike most auditing libraries, it does not override entity framework's `OnChanges()` and use reflection, allowing developers to opt-in to auditing for only certain models and scenarios, as well as adding any extra metadata to any request (such as a description of the action, a user ID, and more).
 
+This audit engine tracks the before and after state of a tracked model in JSON. This means that this engine excels at listing all changes for a certain tracked entity, but does not perform as well when searching for when certain members are changed from one value to another, as searching JSON is not supported well by EntityFrameworkCore. However, this can usually be achieved with JSON tools from your specific SQL provider. 
+
 # Usage
 
 ## Setup
