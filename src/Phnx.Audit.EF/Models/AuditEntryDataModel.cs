@@ -16,7 +16,6 @@ namespace Phnx.Audit.EF.Models
 
         public AuditedOperationTypeEnum Type { get; set; }
 
-        [Required]
         public string Description { get; set; }
 
         public DateTime AuditedOn { get; set; }
