@@ -37,6 +37,42 @@ If you have a primary key for your entities, and you want to use a foreign key I
 
 If you have an aggregate primary key, or you don't want to use a foreign key ID in your C#, then you can use `AuditEntryDataModel<TEntity>` instead. `TEntity` must be set to the type of the table you are tracking. 
 
+You can create audits with additional metadata in your metadata logs if you want to, or just use the minimal data.
+
+In this example, `Products` is the table under audit
+
+#### Without extra audit data
+```cs
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public decimal Price { get; set; }
+    
+    public List<AuditEntryDataModel<Product>> Audits { get; set; }
+}
+```
+
+#### With extra audit data
+```cs
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public decimal Price { get; set; }
+    
+    public List<ProductAudit> Audits { get; set; }
+}
+
+public class ProductAudit : AuditEntryDataModel<Product>
+{
+    // Any extra audit data can be added as columns here
+    public string string ChangeApprovedByUserId { get; set; }
+}
+```
+
 ### Database
 
 Phnx.Audit.EF provides an extension method in `Microsoft.EntityFrameworkCore` for `EntityTypeBuilder`. This allows you to use the `OnConfiguring` method in your `DbContext` to add audit tables, and automatically configure them.
@@ -68,8 +104,19 @@ auditService.GenerateEntry<ModelToAudit, MyAuditModel>(model);
 
 `Phnx.Audit.EF` is based on a fluent API. This is because it offers many features that are optional. You can add your own extension methods onto `FluentAudit` if you want to add your own metadata, including metadata specific to certain audit events (such as who authorized a change, if a change requires review).
 
+#### Without extra audit data
 ```cs
-auditService.GenerateEntry<ModelToAudit, MyAuditModel>(model)
+auditService.GenerateEntry<Product, AuditEntryDataModel<Product>>(model)
     .WithDescription("Something was updated")
     .WithUserId("sample-user-id");
+```
+
+#### With extra audit data
+```cs
+ProductAuditModel auditModel = auditService.GenerateEntry<Product, ProductAuditModel>(model)
+    .WithDescription("Something was updated")
+    .WithUserId("sample-user-id");
+
+// Set any extra columns or metadata here
+auditModel.ChangeApprovedByUserId = approvedByUserId;
 ```
