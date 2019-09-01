@@ -1,0 +1,9 @@
+language: csharp
+mono: none
+dotnet: 2.2
+sudo: required
+dist: xenial
+script:
+    - dotnet restore
+    - dotnet build
+    - dotnet test ./src/Phnx.Audit.EF.Tests/Phnx.Audit.EF.Tests.csproj
