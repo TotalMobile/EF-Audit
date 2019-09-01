@@ -7,14 +7,14 @@ namespace Phnx.Audit.EF
 {
     public class AuditService<TContext> : IAuditService<TContext> where TContext : DbContext
     {
-        public AuditService(TContext context, IChangeDetectionService<TContext> changeDetectionService)
+        public AuditService(TContext context, IChangeDetectionService changeDetectionService)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             ChangeDetectionService = changeDetectionService ?? throw new ArgumentNullException(nameof(changeDetectionService));
         }
 
         protected TContext Context { get; }
-        protected IChangeDetectionService<TContext> ChangeDetectionService { get; }
+        protected IChangeDetectionService ChangeDetectionService { get; }
 
         public FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity)
             where TEntity : class
@@ -23,16 +23,17 @@ namespace Phnx.Audit.EF
             return GenerateEntry<TAuditEntry, TEntity>(entity, DateTime.UtcNow);
         }
 
-        public FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity entity, DateTime auditedOn)
+        public FluentAudit<TContext, TAuditEntry, TEntity> GenerateEntry<TAuditEntry, TEntity>(TEntity model, DateTime auditedOn)
             where TEntity : class
             where TAuditEntry : AuditEntryDataModel<TEntity>, new()
         {
+            var entity = Context.Entry(model);
             var (type, beforeJson, afterJson) = ChangeDetectionService.SerializeEntityChanges(entity);
 
             var entry = new TAuditEntry
             {
                 AuditedOn = auditedOn,
-                Entity = entity,
+                Entity = model,
                 Type = type,
                 EntityBeforeJson = beforeJson,
                 EntityAfterJson = afterJson

@@ -9,7 +9,7 @@ namespace Phnx.Audit.EF
             where TContext : DbContext
         {
             services.AddTransient<IAuditService<TContext>, AuditService<TContext>>();
-            services.AddTransient<IChangeDetectionService<TContext>, ChangeDetectionService<TContext>>();
+            services.AddTransient<IChangeDetectionService, ChangeDetectionService>();
 
             return services;
         }

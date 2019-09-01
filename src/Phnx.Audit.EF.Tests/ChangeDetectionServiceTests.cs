@@ -12,15 +12,9 @@ namespace Phnx.Audit.EF.Tests
     public class ChangeDetectionServiceTests : ContextTestBase
     {
         [Test]
-        public void New_WhenContextIsNull_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => new ChangeDetectionService<DbContext>(null));
-        }
-
-        [Test]
         public void GetChangeType_WhenModelIsNotTracked_ThrowsArgumentException()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var entity = Context.Entry(new ModelToAudit());
 
             Assert.Throws<ArgumentException>(() => cds.GetChangeType(entity));
@@ -29,7 +23,7 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsAdded_ReturnsInsert()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel(false);
             Context.Add(model);
             var entity = Context.Entry(model);
@@ -42,7 +36,7 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsRemoved_ReturnsDelete()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel(false);
             Context.Remove(model);
             var entity = Context.Entry(model);
@@ -55,7 +49,7 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsAttachedWithId_ReturnsUpdate()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel(false);
 
             Context.Attach(model);
@@ -69,7 +63,7 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelMemberIsUpdated_ReturnsUpdate()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel();
 
             model.Name = Guid.NewGuid().ToString();
@@ -80,18 +74,11 @@ namespace Phnx.Audit.EF.Tests
         }
 
         [Test]
-        public void GetEntity_WhenEntityIsNull_ThrowsArgumentNullException()
-        {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
-            Assert.Throws<ArgumentNullException>(() => cds.GetEntity(null));
-        }
-
-        [Test]
         public void SerializeEntityChanges_WhenEntityIsInserted_SerializesEntityToAfter()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel();
-            var entity = cds.GetEntity(model);
+            var entity = Context.Entry(model);
 
             var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
 
@@ -102,9 +89,9 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsDeleted_SerializesEntityToBefore()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel();
-            var entity = cds.GetEntity(model);
+            var entity = Context.Entry(model);
 
             var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Delete, entity);
 
@@ -115,9 +102,9 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsUpdated_SerializesBeforeAndAfter()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel();
-            var entity = cds.GetEntity(model);
+            var entity = Context.Entry(model);
 
             var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
 
@@ -131,11 +118,11 @@ namespace Phnx.Audit.EF.Tests
             string newName = "New Name";
             string originalName;
 
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel();
             originalName = model.Name;
             model.Name = newName;
-            var entity = cds.GetEntity(model);
+            var entity = Context.Entry(model);
 
             var (beforeJson, afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
             var before = JsonConvert.DeserializeObject<Dictionary<string, object>>(beforeJson);
@@ -153,9 +140,9 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenChangeTypeInvalid_ThrowsArgumentOutOfRangeException()
         {
-            var cds = new ChangeDetectionService<FakeContext>(Context);
+            var cds = new ChangeDetectionService();
             var model = GenerateModel(false);
-            var entity = cds.GetEntity(model);
+            var entity = Context.Entry(model);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => cds.SerializeEntityChanges((AuditedOperationTypeEnum)5, entity));
         }

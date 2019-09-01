@@ -4,10 +4,9 @@ using Phnx.Audit.EF.Models;
 
 namespace Phnx.Audit.EF
 {
-    public interface IChangeDetectionService<TContext> where TContext : DbContext
+    public interface IChangeDetectionService
     {
         AuditedOperationTypeEnum GetChangeType(EntityEntry entity);
-        EntityEntry GetEntity(object model);
         (string original, string updated) SerializeEntityChanges(AuditedOperationTypeEnum changeType, EntityEntry entity);
     }
 }

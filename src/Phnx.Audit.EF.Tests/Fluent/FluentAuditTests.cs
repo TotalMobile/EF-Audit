@@ -11,11 +11,11 @@ namespace Phnx.Audit.EF.Tests.Fluent
 {
     public class FluentAuditTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService<FakeContext> changeDetectionService = null)
+        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService changeDetectionService = null)
         {
             if (changeDetectionService is null)
             {
-                var fakeChangeDetector = new Mock<IChangeDetectionService<FakeContext>>();
+                var fakeChangeDetector = new Mock<IChangeDetectionService>();
                 changeDetectionService = fakeChangeDetector.Object;
             }
 
@@ -56,7 +56,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
             AuditedOperationTypeEnum type = AuditedOperationTypeEnum.Update;
             var model = new ModelToAudit { Id = Guid.NewGuid().ToString() };
 
-            var mockChanges = new Mock<IChangeDetectionService<FakeContext>>();
+            var mockChanges = new Mock<IChangeDetectionService>();
             mockChanges
                 .Setup(c => c.GetChangeType(It.IsAny<EntityEntry>()))
                 .Returns(type);
@@ -80,7 +80,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
             AuditedOperationTypeEnum type = AuditedOperationTypeEnum.Update;
             var model = new ModelToAudit();
 
-            var mockChanges = new Mock<IChangeDetectionService<FakeContext>>();
+            var mockChanges = new Mock<IChangeDetectionService>();
             mockChanges
                 .Setup(c => c.GetChangeType(It.IsAny<EntityEntry>()))
                 .Returns(type);

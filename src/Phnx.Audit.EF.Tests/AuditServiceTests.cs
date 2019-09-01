@@ -8,11 +8,11 @@ namespace Phnx.Audit.EF.Tests
 {
     public class AuditServiceTests : ContextTestBase
     {
-        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService<FakeContext> changeDetectionService = null)
+        public AuditService<FakeContext> GenerateAuditService(IChangeDetectionService changeDetectionService = null)
         {
             if (changeDetectionService is null)
             {
-                var fakeChangeDetector = new Mock<IChangeDetectionService<FakeContext>>();
+                var fakeChangeDetector = new Mock<IChangeDetectionService>();
                 changeDetectionService = fakeChangeDetector.Object;
             }
 

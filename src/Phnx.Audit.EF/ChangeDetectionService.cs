@@ -7,15 +7,8 @@ using System.Collections.Generic;
 
 namespace Phnx.Audit.EF
 {
-    public class ChangeDetectionService<TContext> : IChangeDetectionService<TContext> where TContext : DbContext
+    public class ChangeDetectionService : IChangeDetectionService
     {
-        public ChangeDetectionService(TContext dbContext)
-        {
-            DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-        }
-
-        protected TContext DbContext { get; }
-
         /// <summary>
         /// Gets the type of change applied to a model. If the model is not tracked, this will return <see langword="null"/>
         /// </summary>
@@ -60,11 +53,6 @@ namespace Phnx.Audit.EF
             }
         }
 
-        public EntityEntry GetEntity(object model)
-        {
-            return DbContext.Entry(model);
-        }
-
         private string SerializeEntity(EntityEntry entity)
         {
             return JsonConvert.SerializeObject(entity.Entity);
@@ -89,8 +77,6 @@ namespace Phnx.Audit.EF
 
         private IEnumerable<ChangedMember> GetUpdatedMembers(EntityEntry entity)
         {
-            AuditedOperationTypeEnum changeType = GetChangeType(entity);
-
             foreach (PropertyEntry prop in entity.Properties)
             {
                 if (MemberHasBeenUpdated(prop, out var change))
