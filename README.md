@@ -28,7 +28,7 @@ You can also set it up by hand with something like
 ConfigureServices(IServiceCollection services)
 {
     services.AddTransient<IAuditService<MyDbContext>, AuditService<MyDbContext>>();
-    services.AddTransient<IChangeDetectionService<MyDbContext>, ChangeDetectionService<MyDbContext>>();
+    services.AddTransient<IChangeDetectionService, ChangeDetectionService>();
 }
 ```
 
