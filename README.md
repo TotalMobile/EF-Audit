@@ -1,4 +1,7 @@
 # Phnx.Audit.EF
+
+[![Build Status](https://travis-ci.com/phoenix-apps/EF-Audit.svg?branch=master)](https://travis-ci.com/phoenix-apps/EF-Audit)
+
 This project allows auditing to be automatically tracked and scanned, whilst still leaving the developer in control of when and what to audit. 
 
 Unlike most auditing libraries, it does not override entity framework's `OnChanges()` and use reflection, allowing developers to opt-in to auditing for only certain models and scenarios, as well as adding any extra metadata to any request (such as a description of the action, a user ID, and more).
