@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Phnx.Audit.EF.Models;
 using Phnx.Audit.EF.Tests.Fakes;
@@ -145,6 +146,24 @@ namespace Phnx.Audit.EF.Tests
             var entity = Context.Entry(model);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => cds.SerializeEntityChanges((AuditedOperationTypeEnum)5, entity));
+        }
+
+        [Test]
+        public void SerializeEntityChanges_WhenModelIsSelfReferencing_IgnoresSelfReferencing()
+        {
+            var cds = new ChangeDetectionService();
+            var model = GenerateModel();
+            model.OneToOneChildModel = new OneToOneChildModel { Parent = model };
+
+            var entity = Context.Entry(model);
+
+            var (_, afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
+            var after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
+
+            var oneToOne = after[nameof(model.OneToOneChildModel)] as JObject;
+
+            Assert.IsNotNull(oneToOne);
+            Assert.IsNull(oneToOne[nameof(OneToOneChildModel.Parent)]);
         }
     }
 }
