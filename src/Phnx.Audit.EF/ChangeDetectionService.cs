@@ -55,7 +55,10 @@ namespace Phnx.Audit.EF
 
         private string SerializeEntity(EntityEntry entity)
         {
-            return JsonConvert.SerializeObject(entity.Entity);
+            return JsonConvert.SerializeObject(entity.Entity, new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
         }
 
         private (string original, string updated) SerializeEntityChanges(IEnumerable<ChangedMember> changes)
