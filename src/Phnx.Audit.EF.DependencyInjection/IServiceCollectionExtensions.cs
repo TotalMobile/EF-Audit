@@ -10,6 +10,7 @@ namespace Phnx.Audit.EF
         {
             services.AddTransient<IAuditService<TContext>, AuditService<TContext>>();
             services.AddTransient<IChangeDetectionService, ChangeDetectionService>();
+            services.AddTransient<IChangeSerializerService, JsonSerializerService>();
 
             return services;
         }

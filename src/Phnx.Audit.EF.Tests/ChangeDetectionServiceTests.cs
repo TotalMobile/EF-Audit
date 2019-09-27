@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Phnx.Audit.EF.Models;
@@ -12,11 +11,16 @@ namespace Phnx.Audit.EF.Tests
 {
     public class ChangeDetectionServiceTests : ContextTestBase
     {
+        public ChangeDetectionService MakeService()
+        {
+            return new ChangeDetectionService(new JsonSerializerService());
+        }
+
         [Test]
         public void GetChangeType_WhenModelIsNotTracked_ThrowsArgumentException()
         {
-            var cds = new ChangeDetectionService();
-            var entity = Context.Entry(new ModelToAudit());
+            ChangeDetectionService cds = MakeService();
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(new ModelToAudit());
 
             Assert.Throws<ArgumentException>(() => cds.GetChangeType(entity));
         }
@@ -24,12 +28,12 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsAdded_ReturnsInsert()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel(false);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel(false);
             Context.Add(model);
-            var entity = Context.Entry(model);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var changeType = cds.GetChangeType(entity);
+            AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
             Assert.AreEqual(AuditedOperationTypeEnum.Insert, changeType);
         }
@@ -37,12 +41,12 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsRemoved_ReturnsDelete()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel(false);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel(false);
             Context.Remove(model);
-            var entity = Context.Entry(model);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var changeType = cds.GetChangeType(entity);
+            AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
             Assert.AreEqual(AuditedOperationTypeEnum.Delete, changeType);
         }
@@ -50,13 +54,13 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelIsAttachedWithId_ReturnsUpdate()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel(false);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel(false);
 
             Context.Attach(model);
-            var entity = Context.Entry(model);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var changeType = cds.GetChangeType(entity);
+            AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
             Assert.AreEqual(AuditedOperationTypeEnum.Update, changeType);
         }
@@ -64,12 +68,12 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void GetChangeType_WhenModelMemberIsUpdated_ReturnsUpdate()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel();
 
             model.Name = Guid.NewGuid().ToString();
-            var entity = Context.Entry(model);
-            var changeType = cds.GetChangeType(entity);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
+            AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
             Assert.AreEqual(AuditedOperationTypeEnum.Update, changeType);
         }
@@ -77,11 +81,11 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsInserted_SerializesEntityToAfter()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
-            var entity = Context.Entry(model);
+            ChangeDetectionService cds = MakeService(); ;
+            ModelToAudit model = GenerateModel();
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
+            (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
 
             Assert.IsNull(before);
             Assert.IsNotNull(after);
@@ -90,11 +94,11 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsDeleted_SerializesEntityToBefore()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
-            var entity = Context.Entry(model);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel();
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Delete, entity);
+            (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Delete, entity);
 
             Assert.IsNotNull(before);
             Assert.IsNull(after);
@@ -103,11 +107,11 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsUpdated_SerializesBeforeAndAfter()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
-            var entity = Context.Entry(model);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel();
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var (before, after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
+            (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
 
             Assert.IsNotNull(before);
             Assert.IsNotNull(after);
@@ -116,18 +120,18 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenEntityIsUpdated_SerializesOnlyChangedMembers()
         {
-            string newName = "New Name";
+            var newName = "New Name";
             string originalName;
 
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel();
             originalName = model.Name;
             model.Name = newName;
-            var entity = Context.Entry(model);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var (beforeJson, afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
-            var before = JsonConvert.DeserializeObject<Dictionary<string, object>>(beforeJson);
-            var after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
+            (string beforeJson, string afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
+            Dictionary<string, object> before = JsonConvert.DeserializeObject<Dictionary<string, object>>(beforeJson);
+            Dictionary<string, object> after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
 
             Assert.IsTrue(before.Count == 1);
             Assert.AreEqual(nameof(model.Name), before.First().Key);
@@ -141,9 +145,9 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenChangeTypeInvalid_ThrowsArgumentOutOfRangeException()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel(false);
-            var entity = Context.Entry(model);
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel(false);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => cds.SerializeEntityChanges((AuditedOperationTypeEnum)5, entity));
         }
@@ -151,14 +155,14 @@ namespace Phnx.Audit.EF.Tests
         [Test]
         public void SerializeEntityChanges_WhenModelIsSelfReferencing_IgnoresSelfReferencing()
         {
-            var cds = new ChangeDetectionService();
-            var model = GenerateModel();
+            ChangeDetectionService cds = MakeService();
+            ModelToAudit model = GenerateModel();
             model.OneToOneChildModel = new OneToOneChildModel { Parent = model };
 
-            var entity = Context.Entry(model);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
-            var (_, afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
-            var after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
+            (string _, string afterJson) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
+            Dictionary<string, object> after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
 
             var oneToOne = after[nameof(model.OneToOneChildModel)] as JObject;
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Phnx.Audit.EF.Models;
 using System;
 
@@ -14,9 +13,9 @@ namespace Phnx.Audit.EF
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var type = service.GetChangeType(entity);
+            AuditedOperationTypeEnum type = service.GetChangeType(entity);
 
-            var (before, after) = service.SerializeEntityChanges(type, entity);
+            (string before, string after) = service.SerializeEntityChanges(type, entity);
 
             return (type, before, after);
         }

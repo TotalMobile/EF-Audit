@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Newtonsoft.Json;
 using Phnx.Audit.EF.Models;
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,13 @@ namespace Phnx.Audit.EF
 {
     public class ChangeDetectionService : IChangeDetectionService
     {
+        private readonly IChangeSerializerService _changeSerializerService;
+
+        public ChangeDetectionService(IChangeSerializerService changeSerializerService)
+        {
+            _changeSerializerService = changeSerializerService;
+        }
+
         /// <summary>
         /// Gets the type of change applied to a model. If the model is not tracked, this will return <see langword="null"/>
         /// </summary>
@@ -37,15 +43,15 @@ namespace Phnx.Audit.EF
             switch (changeType)
             {
                 case AuditedOperationTypeEnum.Insert:
-                    jsonEntity = SerializeEntity(entity);
+                    jsonEntity = _changeSerializerService.Serialize(entity.Entity);
                     return (null, jsonEntity);
 
                 case AuditedOperationTypeEnum.Update:
-                    var updatedMembers = GetUpdatedMembers(entity);
+                    IEnumerable<ChangedMember> updatedMembers = GetUpdatedMembers(entity);
                     return SerializeEntityChanges(updatedMembers);
 
                 case AuditedOperationTypeEnum.Delete:
-                    jsonEntity = SerializeEntity(entity);
+                    jsonEntity = _changeSerializerService.Serialize(entity.Entity);
                     return (jsonEntity, null);
 
                 default:
@@ -53,27 +59,19 @@ namespace Phnx.Audit.EF
             }
         }
 
-        private string SerializeEntity(EntityEntry entity)
-        {
-            return JsonConvert.SerializeObject(entity.Entity, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
-        }
-
         private (string original, string updated) SerializeEntityChanges(IEnumerable<ChangedMember> changes)
         {
             var original = new Dictionary<string, object>();
             var updated = new Dictionary<string, object>();
 
-            foreach (var change in changes)
+            foreach (ChangedMember change in changes)
             {
                 original.Add(change.Name, change.Before);
                 updated.Add(change.Name, change.After);
             }
 
-            var originalAsJson = JsonConvert.SerializeObject(original);
-            var updatedAsJson = JsonConvert.SerializeObject(updated);
+            var originalAsJson = _changeSerializerService.Serialize(original);
+            var updatedAsJson = _changeSerializerService.Serialize(updated);
 
             return (originalAsJson, updatedAsJson);
         }
@@ -82,7 +80,7 @@ namespace Phnx.Audit.EF
         {
             foreach (PropertyEntry prop in entity.Properties)
             {
-                if (MemberHasBeenUpdated(prop, out var change))
+                if (MemberHasBeenUpdated(prop, out ChangedMember change))
                 {
                     yield return change;
                 }
