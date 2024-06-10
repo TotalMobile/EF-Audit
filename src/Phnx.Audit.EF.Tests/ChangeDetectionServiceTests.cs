@@ -35,7 +35,7 @@ namespace Phnx.Audit.EF.Tests
 
             AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
-            Assert.AreEqual(AuditedOperationTypeEnum.Insert, changeType);
+            Assert.That(AuditedOperationTypeEnum.Insert, Is.EqualTo(changeType));
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace Phnx.Audit.EF.Tests
 
             AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
-            Assert.AreEqual(AuditedOperationTypeEnum.Delete, changeType);
+            Assert.That(AuditedOperationTypeEnum.Delete, Is.EqualTo(changeType));
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace Phnx.Audit.EF.Tests
 
             AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
-            Assert.AreEqual(AuditedOperationTypeEnum.Update, changeType);
+            Assert.That(AuditedOperationTypeEnum.Update, Is.EqualTo(changeType));
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace Phnx.Audit.EF.Tests
             Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
             AuditedOperationTypeEnum changeType = cds.GetChangeType(entity);
 
-            Assert.AreEqual(AuditedOperationTypeEnum.Update, changeType);
+            Assert.That(AuditedOperationTypeEnum.Update, Is.EqualTo(changeType));
         }
 
         [Test]
@@ -87,8 +87,8 @@ namespace Phnx.Audit.EF.Tests
 
             (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Insert, entity);
 
-            Assert.IsNull(before);
-            Assert.IsNotNull(after);
+            Assert.That(before, Is.Null);
+            Assert.That(after, Is.Not.Null);
         }
 
         [Test]
@@ -99,9 +99,9 @@ namespace Phnx.Audit.EF.Tests
             Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
             (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Delete, entity);
-
-            Assert.IsNotNull(before);
-            Assert.IsNull(after);
+            
+            Assert.That(before, Is.Not.Null);
+            Assert.That(after, Is.Null);
         }
 
         [Test]
@@ -112,9 +112,9 @@ namespace Phnx.Audit.EF.Tests
             Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
             (string before, string after) = cds.SerializeEntityChanges(AuditedOperationTypeEnum.Update, entity);
-
-            Assert.IsNotNull(before);
-            Assert.IsNotNull(after);
+            
+            Assert.That(before, Is.Not.Null);
+            Assert.That(after, Is.Not.Null);
         }
 
         [Test]
@@ -133,13 +133,13 @@ namespace Phnx.Audit.EF.Tests
             Dictionary<string, object> before = JsonConvert.DeserializeObject<Dictionary<string, object>>(beforeJson);
             Dictionary<string, object> after = JsonConvert.DeserializeObject<Dictionary<string, object>>(afterJson);
 
-            Assert.IsTrue(before.Count == 1);
-            Assert.AreEqual(nameof(model.Name), before.First().Key);
-            Assert.AreEqual(originalName, before.First().Value);
+            Assert.That(before.Count == 1, Is.True);
+            Assert.That(nameof(model.Name), Is.EqualTo(before.First().Key));
+            Assert.That(originalName, Is.EqualTo(before.First().Value));
 
-            Assert.IsTrue(after.Count == 1);
-            Assert.AreEqual(nameof(model.Name), after.First().Key);
-            Assert.AreEqual(newName, after.First().Value);
+            Assert.That(after.Count == 1, Is.True);
+            Assert.That(nameof(model.Name), Is.EqualTo(after.First().Key));
+            Assert.That(newName, Is.EqualTo(after.First().Value));
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace Phnx.Audit.EF.Tests
         {
             ChangeDetectionService cds = MakeService();
             ModelToAudit model = GenerateModel();
-            model.OneToOneChildModel = new OneToOneChildModel { Parent = model };
+            model.OneToOneChildModel = new OneToOneChildModel { Id = Guid.NewGuid().ToString(), Parent = model };
 
             Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<ModelToAudit> entity = Context.Entry(model);
 
@@ -166,8 +166,8 @@ namespace Phnx.Audit.EF.Tests
 
             var oneToOne = after[nameof(model.OneToOneChildModel)] as JObject;
 
-            Assert.IsNotNull(oneToOne);
-            Assert.IsNull(oneToOne[nameof(OneToOneChildModel.Parent)]);
+            Assert.That(oneToOne, Is.Not.Null);
+            Assert.That(oneToOne[nameof(OneToOneChildModel.Parent)], Is.Null);
         }
     }
 }

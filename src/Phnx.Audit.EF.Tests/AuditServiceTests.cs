@@ -28,7 +28,7 @@ namespace Phnx.Audit.EF.Tests
             AuditService<FakeContext> auditService = GenerateAuditService();
             AuditEntryModel newEntry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(new ModelToAudit(), auditedOn);
 
-            Assert.AreEqual(auditedOn, newEntry.AuditedOn);
+            Assert.That(auditedOn, Is.EqualTo(newEntry.AuditedOn));
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace Phnx.Audit.EF.Tests
 
             Context.SaveChanges();
 
-            Assert.AreEqual(model.Id, newEntry.EntityId);
+            Assert.That(model.Id, Is.EqualTo(newEntry.EntityId));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace Phnx.Audit.EF.Tests
 
             Context.SaveChanges();
 
-            Assert.AreEqual(model.Id, newEntry.EntityId);
+            Assert.That(model.Id, Is.EqualTo(newEntry.EntityId));
         }
     }
 }
