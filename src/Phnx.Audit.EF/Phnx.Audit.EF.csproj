@@ -13,7 +13,7 @@
     <RepositoryType>Git</RepositoryType>
     <PackageIconUrl>https://raw.githubusercontent.com/phoenix-apps/phnx/master/qrcode-link-to-github.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageId>TotalMobile.Phnx.Audit.EF</PackageId>
+    <PackageId>Worksuite.Phnx.Audit.EF</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
