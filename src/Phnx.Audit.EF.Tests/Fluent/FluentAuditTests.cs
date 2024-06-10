@@ -33,7 +33,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
 
             AuditEntryModel entry = fluent.WithDescription(description);
 
-            Assert.AreEqual(description, entry.Description);
+            Assert.That(description, Is.EqualTo(entry.Description));
         }
 
         [Test]
@@ -45,7 +45,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
 
             AuditEntryModel entry = fluent.WithUserId(userId);
 
-            Assert.AreEqual(userId, entry.UserId);
+            Assert.That(userId, Is.EqualTo(entry.UserId));
         }
 
         [Test]
@@ -69,9 +69,9 @@ namespace Phnx.Audit.EF.Tests.Fluent
             AuditService<FakeContext> auditService = GenerateAuditService(mockChanges.Object);
             AuditEntryModel entry = auditService.GenerateEntry<AuditEntryModel, ModelToAudit>(model);
 
-            Assert.AreEqual(type, entry.Type);
-            Assert.AreEqual(before, entry.EntityBeforeJson);
-            Assert.AreEqual(after, entry.EntityAfterJson);
+            Assert.That(type, Is.EqualTo(entry.Type));
+            Assert.That(before, Is.EqualTo(entry.EntityBeforeJson));
+            Assert.That(after, Is.EqualTo(entry.EntityAfterJson));
         }
 
         [Test]
@@ -94,7 +94,7 @@ namespace Phnx.Audit.EF.Tests.Fluent
 
             Context.SaveChanges();
 
-            Assert.AreEqual(1, Context.AuditEntries.Count());
+            Assert.That(1, Is.EqualTo(Context.AuditEntries.Count()));
         }
     }
 }
